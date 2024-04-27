@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 import re
 import threading
 import csv
+from bs4 import BeautifulSoup
 
 
 class Scraper:
@@ -257,59 +258,43 @@ class WebCrawler:
 
 
 class ElementSelector:
+    """ Class to extract elements from HTML content based on different selectors. """
+
     @staticmethod
     def extract_elements(html, selector):
-        """Extracts elements from the HTML based on the provided selector."""
+        """Determines the method of extraction based on the type of selector."""
         if selector.startswith("//"):
-            # XPath selector
+            # Extract using XPath-like syntax (if you want to implement this, consider using lxml)
             return ElementSelector.extract_elements_by_xpath(html, selector)
         elif selector.startswith("<"):
-            # HTML tag selector
+            # Extract using direct HTML tag
             return ElementSelector.extract_elements_by_tag(html, selector)
         else:
-            # CSS selector
+            # Extract using CSS-like syntax
             return ElementSelector.extract_elements_by_css_selector(html, selector)
+
 
     @staticmethod
     def extract_elements_by_xpath(html, selector):
-        """Extracts elements from the HTML based on the provided XPath selector."""
-        pattern = r'<[^>]*>'
-        elements = re.findall(pattern, html)
+        """Extracts elements using a simulated XPath selector."""
+        tag = selector.split("//")[1]
+        pattern = rf"<{tag}[^>]*>.*?</{tag}>"
+        elements = re.findall(pattern, html, re.DOTALL)
         return elements
 
     @staticmethod
     def extract_elements_by_tag(html, selector):
-        """Extracts elements from the HTML based on the provided HTML tag selector."""
-        tag_name = selector[1:-1]
-        pattern = rf'<{tag_name}[^>]*>'
-        elements = re.findall(pattern, html)
-        return elements
+        # Assuming direct tag use without angle brackets
+        tag = selector.strip('<>')
+        soup = BeautifulSoup(html, 'html.parser')
+        return [str(element) for element in soup.find_all(tag)]
 
     @staticmethod
     def extract_elements_by_css_selector(html, selector):
-        """Extracts elements from the HTML based on the provided CSS selector."""
-        selector = selector.strip()
-        selector_parts = selector.split(" ")
-
-        elements = [html]
-        for part in selector_parts:
-            # Looking after ID, class or attribute selectors in the CSS selector
-            if part.startswith("#"):
-                # Extract by ID
-                id_value = part[1:]
-                elements = ElementSelector.filter_elements_by_attribute(elements, "id", id_value)
-            elif part.startswith("."):
-                # Extract by class
-                class_value = part[1:]
-                elements = ElementSelector.filter_elements_by_attribute(elements, "class", class_value)
-            elif part.startswith("["):
-                # Extract by attribute
-                attr_match = re.match(r"\[(.*)=(.*)\]", part)
-                if attr_match:
-                    attr_name, attr_value = attr_match.group(1), attr_match.group(2)
-                    elements = ElementSelector.filter_elements_by_attribute(elements, attr_name, attr_value)
-
-        return elements
+        soup = BeautifulSoup(html, 'html.parser')
+        selected_elements = soup.select(selector)
+        # Convert elements back to string for comparison in tests
+        return [str(element) for element in selected_elements]
 
     @staticmethod
     def filter_elements_by_attribute(elements, attr_name, attr_value):

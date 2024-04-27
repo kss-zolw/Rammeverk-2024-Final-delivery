@@ -2,17 +2,17 @@ from scrape import ElementSelector
 
 
 class WebPage:
-    """Represents a web page."""
-
+    """ Represents a web page. """
+    
     def __init__(self, name, url, html_content, **kwargs):
         """
-        Initialize a WebPage object.
+        Initializes a WebPage object with specified attributes and any additional keyword arguments.
 
         Args:
             name (str): The name of the web page.
             url (str): The URL of the web page.
             html_content (str): The HTML content of the web page.
-            **kwargs: Additional user-defined attributes.
+            **kwargs: Additional user-defined attributes, passed as key-value pairs.
 
         Example:
             page = WebPage(name='Example Page', url='https://example.com', html_content='<html>...</html>',
@@ -22,52 +22,40 @@ class WebPage:
         self.url = url
         self.html_content = html_content
 
-        # Set user-defined attributes
-        for attr_name, attr_value in kwargs.items():
-            setattr(self, attr_name, attr_value)
+        # Dynamically assign any additional attributes
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     @staticmethod
     def pretty_print_html(html_content, indent_size=4, initial_indent=0):
-        """Pretty print the HTML content of the web page.
-
+        """ Pretty prints the HTML content with indentation for better readability. 
+        
         Args:
-            html_content (str): The HTML content of the web page.
-            indent_size (int, optional): The size of the indentation. Defaults to 4.
-            initial_indent (int, optional): The initial indentation level. Defaults to 0.
-
+            html_content (str): The HTML content to print.
+            indent_size (int, optional): The size of each indentation level. Defaults to 4.
+            initial_indent (int, optional): The starting indentation level. Defaults to 0.
+        
         Example:
-            page = WebPage(name='Example Page', url='https://example.com', html_content='<html>...</html>')
-            WebPage.pretty_print_html(page.html_content)
+            WebPage.pretty_print_html('<html><body>Hello</body></html>')
         """
-
-        result = ""
-
-        # Convert bytes to string
-
-        try:
-            for char in html_content:
-                if char == '<':
-                    result += "\n" + " " * (indent_size * initial_indent) + char
-                    initial_indent += 1
-                elif char == '>':
-                    result += char
-                    if initial_indent > 0:
-                        initial_indent -= 1
+        indent_level = initial_indent
+        formatted_html = ''
+        for char in html_content:
+            if char == '<':
+                formatted_html += '\n' + ' ' * indent_size * indent_level + char
+                indent_level += 1
+            elif char == '>':
+                formatted_html += char
+                indent_level = max(indent_level - 1, 0)
+            else:
+                if formatted_html.endswith('>'):
+                    formatted_html += '\n' + ' ' * indent_size * indent_level + char
                 else:
-                    result += char
-        except:
-            decoded_content = html_content.decode('utf-8')
-            for char in decoded_content:
-                if char == '<':
-                    result += "\n" + " " * (indent_size * initial_indent) + char
-                    initial_indent += 1
-                elif char == '>':
-                    result += char
-                    if initial_indent > 0:
-                        initial_indent -= 1
-                else:
-                    result += char
-        print(result)
+                    formatted_html += char
+
+        print(formatted_html)
+
+
 
 
 class NewsSite(WebPage):
