@@ -1,0 +1,10 @@
+README.md
+setup.py
+ScrapePyFramework.egg-info/PKG-INFO
+ScrapePyFramework.egg-info/SOURCES.txt
+ScrapePyFramework.egg-info/dependency_links.txt
+ScrapePyFramework.egg-info/requires.txt
+ScrapePyFramework.egg-info/top_level.txt
+tests/__init__.py
+tests/test_scrape.py
+tests/test_scrape_models.py

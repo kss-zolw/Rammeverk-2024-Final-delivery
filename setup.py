@@ -1,17 +1,19 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='Webscraper',
+    name='ScrapePyFramework',
     version='1.0.0',
     author='Kristoffer Snopestad Søderkvist',
-    author_email='bass4nation@gmail.com',
-    description='PyScraper is a python framework that is ment to be a efficient, user-friendly webscraping framework.'
-                'It was made as a shcool Exam project at the College University of Østfold, Norway in the subject "Frameworks"',    packages=find_packages(),
+    author_email='bass4nation@gmail.com & kristoss@hiof.no',
+    description='ScrapePyFramework is a Python-based web scraping framework designed for efficiency and user-friendliness. '
+    'Developed as part of a school exam for the "Framework" course at Østfold University College in Norway, this framework aims '
+    'to simplify the process of data extraction from the internett.',    packages=find_packages(),
     install_requires=[
         "python_version == 3.12.3",
-        "requests==2.28.2",
-        "urllib3==1.26.15",
-        "pytest==7.2.2"
+        "requests==2.31.0",
+        "urllib3==2.2.1",
+        "pytest==8.1.2",
+        "beautifulsoup4==4.12.3"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
