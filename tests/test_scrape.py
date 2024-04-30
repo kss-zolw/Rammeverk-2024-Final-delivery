@@ -12,14 +12,14 @@ mock_json = {
 # Test Scraper class for different data types and responses
 class TestScraper:
     def test_scrape_returns_html_as_bytes(self):
-        url = "https://example.com"
+        url = "https://test.no"
         data_type = "html"
         scraper = Scraper()
         result = scraper.scrape(url, data_type)
         assert isinstance(result, bytes), "HTML content should be returned as bytes"
 
     def test_scrape_returns_json_as_dict(self):
-        url = "https://example.com"
+        url = "https://test.no"
         data_type = "json"
         scraper = Scraper()
         with patch.object(scraper, 'scrape', return_value=mock_json):
@@ -27,7 +27,7 @@ class TestScraper:
             assert isinstance(result, dict) and result == mock_json, "JSON data should be returned as a dictionary and match the mock JSON"
 
     def test_scrape_raises_error_for_unsupported_data_type(self):
-        url = "https://example.com"
+        url = "https://test.no"
         data_type = "unsupported"
         scraper = Scraper()
         with pytest.raises(ValueError):
@@ -38,42 +38,42 @@ def test_url_extraction_from_html():
     html_content = """
     <html>
         <body>
-            <a href="https://example.com/page1">Page 1</a>
-            <a href="/page2">Page 2</a>
-            <a href="https://example.com/page3">Page 3</a>
+            <a href="https://test.no/1"> 1</a>
+            <a href="/2"> 2</a>
+            <a href="https://test.no/3"> 3</a>
         </body>
     </html>
     """
-    base_url = "https://example.com"
-    expected_urls = ["https://example.com/page1", "https://example.com/page2", "https://example.com/page3"]
+    base_url = "https://test.no"
+    expected_urls = ["https://test.no/1", "https://test.no/2", "https://test.no/3"]
     extracted_urls = extract_urls(html_content, base_url)
     assert extracted_urls == expected_urls, "Extracted URLs should match the expected list of URLs"
 
 # Test for HTML parsing and URL extraction
 def test_html_parsing_and_url_extraction():
-    url = "https://example.com"
+    url = "https://test.no"
     html_content = """
     <html>
         <body>
-            <a href="https://example.com/page1">Page 1</a>
-            <a href="/page2">Page 2</a>
-            <a href="https://example.com/page3">Page 3</a>
+            <a href="https://test.no/1"> 1</a>
+            <a href="/2"> 2</a>
+            <a href="https://test.no/3"> 3</a>
         </body>
     </html>
     """
-    expected_urls = ["https://example.com/page1", "https://example.com/page2", "https://example.com/page3"]
+    expected_urls = ["https://test.no/1", "https://test.no/2", "https://test.no/3"]
     extracted_urls = parse_html(url, html_content)
     assert extracted_urls == expected_urls, "Extracted URLs from parsed HTML should match the expected URLs"
 
 # Test scraping functionality of WebScraper
 def test_web_scraper_scraping_html_and_json():
     web_scraper = WebScraper()
-    url_html = "https://example.com"
+    url_html = "https://test.no"
     data_type_html = "html"
     html_content = web_scraper.scrape(url_html, data_type_html)
     assert isinstance(html_content, str), "Scraped HTML content should be a string"
 
-    url_json = "https://example.com/api"
+    url_json = "https://test.no/api"
     data_type_json = "json"
     with patch.object(web_scraper, 'scrape', return_value=mock_json):
         json_data = web_scraper.scrape(url_json, data_type_json)
@@ -82,25 +82,25 @@ def test_web_scraper_scraping_html_and_json():
 # Test WebCrawler's single-page crawl functionality
 def test_single_page_crawl_functionality():
     crawler = WebCrawler()
-    with patch.object(crawler, 'scrape', return_value='<html><body><a href="https://example.com/page1">Page 1</a></body></html>'):
-        crawled_urls = crawler.crawl('https://example.com', max_depth=1, num_threads=1)
-        assert 'https://example.com' in crawled_urls and 'https://example.com/page1' in crawled_urls, "Crawled URLs should include the starting and extracted URL"
+    with patch.object(crawler, 'scrape', return_value='<html><body><a href="https://test.no/1"> 1</a></body></html>'):
+        crawled_urls = crawler.crawl('https://test.no', max_depth=1, num_threads=1)
+        assert 'https://test.no' in crawled_urls and 'https://test.no/1' in crawled_urls, "Crawled URLs should include the starting and extracted URL"
 
 # Test WebCrawler's ability to crawl multiple pages
 def test_multiple_pages_crawl_functionality():
     crawler = WebCrawler()
     with patch.object(crawler, 'scrape', side_effect=[
-        '<html><body><a href="https://example.com/page1">Page 1</a></body></html>',
-        '<html><body><a href="https://example.com/page2">Page 2</a></body></html>'
+        '<html><body><a href="https://test.no/1"> 1</a></body></html>',
+        '<html><body><a href="https://test.no/2"> 2</a></body></html>'
     ]):
-        crawled_urls = crawler.crawl('https://example.com', max_depth=2, num_threads=1)
-        assert 'https://example.com' in crawled_urls and 'https://example.com/page1' in crawled_urls, "Crawled URLs should contain the starting URL and extracted URLs from both pages"
+        crawled_urls = crawler.crawl('https://test.no', max_depth=2, num_threads=1)
+        assert 'https://test.no' in crawled_urls and 'https://test.no/1' in crawled_urls, "Crawled URLs should contain the starting URL and extracted URLs from both pages"
 
 # Test WebCrawler's error handling when scrape method fails
 def test_crawl_error_handling():
     crawler = WebCrawler()
     with patch.object(crawler, 'scrape', side_effect=Exception("Scrape error")):
-        crawled_urls = crawler.crawl('https://example.com', max_depth=1, num_threads=1)
+        crawled_urls = crawler.crawl('https://test.no', max_depth=1, num_threads=1)
         assert len(crawled_urls) == 0, "No URLs should be crawled when an error occurs during scraping"
 
 
