@@ -1,5 +1,5 @@
 # Webscraper - Kristoffer Snopestad Søderkvist
-**GITHUB LINK TO SCRAPER:**
+**GITHUB LINK TO SCRAPER:https://github.com/kss-zolw/Rammeverk-2024-Final-delivery**
 ### How to run:
 
 This webscraper is tested with Python version 3.12.3
@@ -38,4 +38,5 @@ If you are on unix systems (PS: I havent tested this, just read about it so I am
 (venv) > pip3 install -r requirements.txt
 ````
 pip list to check if all packages is installed and what versions packages have.
-````
+Should also be able to pip install into the dist folder to use the .tar.gz file as a packages for other projects.
+This will be like installing all other libaries and adding it to your new project

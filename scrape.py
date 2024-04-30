@@ -4,17 +4,17 @@ from urllib.parse import urljoin
 import re
 import threading
 import csv
+
 from bs4 import BeautifulSoup
 
 
 class Scraper:
     @staticmethod
     def scrape(url, data_type):
-        """Scrapes data from a given URL.
-
+        """Use the requested URL to scrape data.
         Args:
-            url (str): The URL to scrape.
-            data_type (str): The type of data to scrape ('html' or 'json').
+            url (string): The URL to scrape.
+            data_type (string): The type of data to scrape if it is html or json).
 
         Returns:
             bytes or dict: The scraped data.
@@ -23,59 +23,67 @@ class Scraper:
             ValueError: If an unsupported data type is provided.
             Exception: If the request fails with a non-200 status code.
         """
-        session = requests.Session()
-        response = session.get(url)
-        if response.status_code == 200:
+        with requests.Session() as session:
+            response = session.get(url)
+            if response.status_code != 200:
+                raise Exception(f"Request failed: status code {response.status_code}")
+
             if data_type == 'html':
                 return response.content
             elif data_type == 'json':
                 return response.json()
             else:
                 raise ValueError(f"Unsupported data type: {data_type}")
-        else:
-            raise Exception(f"Request failed with status code {response.status_code}")
-
+        
     @staticmethod
     def export_to_file(data, file_path, fields=None):
         """Exports the scraped data to a file.
 
-        Args:
-            data: The data to export.
-            file_path (string): The path to the output file.
-            fields (list, optional): The fields to include in the output file. Defaults to None.
-        """
+    Args:
+        data (bytes, str, list, or dict): The data to export.
+        file_path (str): The path to the output file.
+        fields (list, optional): The fields to include in the CSV output file. This is only used if data is a dict or list of dicts.
+
+    Raises:
+        ValueError: If the data type is unsupported or if fields are not provided for a dict.
+    """
         if isinstance(data, bytes):
-            data = data.decode()
+            data = data.decode('utf-8')  # Decode bytes to string assuming UTF-8 encoding
 
         if isinstance(data, str):
             with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(data)
-        elif isinstance(data, dict):
-            if not fields:
-                fields = list(data.keys())
-            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(data)  # Write string data directly to file
+        elif isinstance(data, dict) or (isinstance(data, list) and all(isinstance(item, dict) for item in data)):
+            with open(file_path, 'w', newline='', encoding='utf-8') as file:
+                if not fields:
+                    if isinstance(data, dict):
+                        fields = list(data.keys())  # Use dictionary keys as fields if not specified
+                    elif isinstance(data, list):
+                        fields = list(data[0].keys())  # Assume all dictionaries have the same structure
                 writer = csv.DictWriter(file, fieldnames=fields)
                 writer.writeheader()
-                writer.writerow(data)
+                if isinstance(data, dict):
+                    writer.writerow(data)  # Write a single dictionary to the CSV file
+                else:
+                    writer.writerows(data)  # Write a list of dictionaries to the CSV file
         else:
-            raise ValueError("Invalid data type. Expected bytes or dict.")
+            raise ValueError("Invalid data type. Expected bytes, str, dict, or list of dicts.")
+
 
     @staticmethod
     def extract_text(element):
         """Extracts the text content from an HTML element."""
-        pattern = r'>\s*(.*?)\s*<'
-        match = re.search(pattern, element)
-        if match:
-            return match.group(1).strip()
-        return ""
+        soup = BeautifulSoup(element, 'html.parser')
+        return soup.get_text(strip=True)
+
 
     @staticmethod
     def extract_attribute(element, attribute):
         """Extracts the value of the specified attribute from an HTML element."""
-        pattern = rf'{attribute}=[\'"](.*?)[\'"]'
-        match = re.search(pattern, element)
-        if match:
-            return match.group(1)
+        soup = BeautifulSoup(element, 'html.parser')
+        tag = soup.find()
+        if tag and tag.has_attr(attribute):
+            return tag[attribute]
         return ""
 
 
@@ -298,11 +306,41 @@ class ElementSelector:
 
     @staticmethod
     def filter_elements_by_attribute(elements, attr_name, attr_value):
-        """Filters elements based on the provided attribute name and value."""
+        """Filters a list of HTML elements, returning only those that have a specific attribute with a specified value.
+
+        Args:
+            elements (list of str): HTML elements to filter.
+            attr_name (str): The attribute name to filter by.
+            attr_value (str): The attribute value to match.
+
+        Returns:
+            list of str: Filtered HTML elements.
+        """
         filtered_elements = []
         for element in elements:
-            pattern = rf'{attr_name}=[\'"]{attr_value}[\'"]'
-            if re.search(pattern, element):
-                filtered_elements.append(element)
+            soup = BeautifulSoup(element, 'html.parser')
+            for tag in soup.find_all(attrs={attr_name: attr_value}):
+                filtered_elements.append(str(tag))
+
         return filtered_elements
 
+    @staticmethod
+    def extract_urls(html_content, base_url):
+        """Extracts URLs from the HTML content.
+
+        Args:
+           html_content (str): The HTML content to extract URLs from.
+            base_url (str): The base URL of the web page.
+
+        Returns:
+            list: A list of extracted URLs.
+        """
+        soup = BeautifulSoup(html_content, 'html.parser')
+        urls = []
+
+        for tag in soup.find_all('a', href=True):
+            href = tag['href']
+            absolute_url = urljoin(base_url, href)
+            urls.append(absolute_url)
+
+        return urls
